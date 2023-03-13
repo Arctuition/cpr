@@ -280,6 +280,14 @@ AsyncResponse DownloadAsync(fs::path local_path, Ts... ts) {
             std::move(local_path), std::move(ts)...)};
 }
 
+template <typename... Ts>
+AsyncResponse DownloadAsyncInThreadPool(fs::path local_path, Ts... ts) {
+    return cpr::async([](fs::path path_inner, Ts... ts_inner){
+        std::ofstream f(path_inner.c_str());
+        return Download(f, std::move(ts_inner)...);
+    }, local_path, std::move(ts)...);
+}
+
 // Download with user callback
 template <typename... Ts>
 Response Download(const WriteCallback& write, Ts&&... ts) {
